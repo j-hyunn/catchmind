@@ -1,8 +1,7 @@
-import type { LifestylePoi, PoiCategory } from '@/types/poi'
-
 import culturePin from '@/assets/culturePin.svg'
 import restaurantPin from '@/assets/restaurantPin.svg'
 
+import type { LifestylePoi, PoiCategory } from '@/types/poi'
 import { loadKakaoMapsSdk } from './kakaoLoader'
 
 export interface MapViewport {

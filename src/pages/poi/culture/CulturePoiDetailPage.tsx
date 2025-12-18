@@ -1,6 +1,3 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-
 import {
   ArrowLeft,
   Bookmark,
@@ -12,16 +9,18 @@ import {
   Share2,
   Star,
 } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 
-import mapVisualizationData from '../../../../Map Visualization Data.json'
+import { ReservationSelectScreen, type ReservationSelectionResult } from '@/components/poi/reservation/ReservationSelectScreen'
+import { ReservationSuccessScreen, type SuccessSummary } from '@/components/poi/reservation/ReservationSuccessScreen'
+import { TicketPaymentScreen } from '@/components/poi/reservation/TicketPaymentScreen'
 import { fetchPoiById } from '@/services/poi/poiApi'
 import { poiService } from '@/services/poi/poiService'
 import type { LifestylePoi, PoiCategory } from '@/types/poi'
-import { ReservationSelectScreen, type ReservationSelectionResult } from '@/components/poi/reservation/ReservationSelectScreen'
-import { TicketPaymentScreen } from '@/components/poi/reservation/TicketPaymentScreen'
-import { ReservationSuccessScreen, type SuccessSummary } from '@/components/poi/reservation/ReservationSuccessScreen'
 import { getMockRating, mapCategoryLabel } from '@/utils/poi'
 
+import mapVisualizationData from '../../../../Map Visualization Data.json'
 import './CulturePoiDetailPage.css'
 
 export function CulturePoiDetailPage() {

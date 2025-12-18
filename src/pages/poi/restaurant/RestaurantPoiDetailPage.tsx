@@ -1,6 +1,3 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-
 import {
   ArrowLeft,
   Bookmark,
@@ -13,13 +10,16 @@ import {
   Share2,
   Star,
 } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 
-import mapVisualizationData from '../../../../Map Visualization Data.json'
+import { RestaurantBottomSheet } from '@/components/poi/RestaurantBottomSheet'
 import { fetchPoiById } from '@/services/poi/poiApi'
 import { poiService } from '@/services/poi/poiService'
 import type { LifestylePoi, PoiCategory } from '@/types/poi'
 import { getMockRating, mapCategoryLabel } from '@/utils/poi'
-import { RestaurantBottomSheet } from '@/components/poi/RestaurantBottomSheet'
+
+import mapVisualizationData from '../../../../Map Visualization Data.json'
 
 import './RestaurantPoiDetailPage.css'
 

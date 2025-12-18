@@ -1,5 +1,5 @@
-import type { KeyboardEvent } from 'react'
 import { Bookmark, CircleDollarSign, Clock4 } from 'lucide-react'
+import type { KeyboardEvent } from 'react'
 
 import './RestaurantCard.css'
 

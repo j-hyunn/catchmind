@@ -1,6 +1,5 @@
-import type { KeyboardEvent, MouseEvent } from 'react'
-
 import { Bookmark, CircleDollarSign, Clock4 } from 'lucide-react'
+import type { KeyboardEvent, MouseEvent } from 'react'
 
 import type { LifestylePoi } from '@/types/poi'
 import { getMockRating, mapCategoryLabel } from '@/utils/poi'
