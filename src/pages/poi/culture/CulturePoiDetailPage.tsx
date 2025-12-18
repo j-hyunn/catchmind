@@ -457,7 +457,7 @@ export function CulturePoiDetailPage() {
           <Bookmark size={18} />
         </button>
         <button type="button" className="poi-detail__primary" onClick={handleOpenReservation}>
-          이용 가능 여부 확인
+          예매하기
         </button>
       </footer>
       {reservationStage === 'selection' && (
