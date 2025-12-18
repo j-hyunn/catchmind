@@ -1,5 +1,8 @@
 import type { LifestylePoi, PoiCategory } from '@/types/poi'
 
+import culturePin from '@/assets/culturePin.svg'
+import restaurantPin from '@/assets/restaurantPin.svg'
+
 import { loadKakaoMapsSdk } from './kakaoLoader'
 
 export interface MapViewport {
@@ -126,27 +129,11 @@ export class MapClient {
     }
 
     const marker = this.markerMap.get(poiId)
-    const poi = this.poiMap.get(poiId)
-
-    if (!marker || !poi) {
+    if (!marker) {
       return
     }
 
-    if (!this.infoWindow) {
-      this.infoWindow = new this.kakaoMaps.InfoWindow({
-        removable: false,
-      })
-    }
-
-    const content = `
-      <div class="poi-infowindow">
-        <strong>${poi.name}</strong>
-        <span>${this.getCategoryLabel(poi.category)}</span>
-      </div>
-    `
-
-    this.infoWindow.setContent(content)
-    this.infoWindow.open(this.map, marker)
+    this.infoWindow?.close()
     this.map.setCenter(marker.getPosition())
   }
 
@@ -154,46 +141,19 @@ export class MapClient {
     if (!this.kakaoMaps) {
       return undefined
     }
-    const presentation = this.getMarkerPresentation(category)
-    const svg = `<svg width="40" height="56" viewBox="0 0 40 56" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20 0C8.954 0 0 8.954 0 20C0 35 20 56 20 56C20 56 40 35 40 20C40 8.954 31.046 0 20 0Z" fill="${presentation.color}"/>
-      <circle cx="20" cy="20" r="12" fill="white" />
-      <text x="20" y="24" text-anchor="middle" font-size="12" font-weight="700" fill="${presentation.color}">
-        ${presentation.glyph}
-      </text>
-    </svg>`
-    const imageSrc = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`
-    return new this.kakaoMaps.MarkerImage(
-      imageSrc,
-      new this.kakaoMaps.Size(40, 56),
-      {
-        offset: new this.kakaoMaps.Point(20, 56),
-      },
-    )
+    const asset = this.getMarkerAsset(category)
+    return new this.kakaoMaps.MarkerImage(asset.src, asset.size, {
+      offset: asset.offset,
+    })
   }
 
-  private getCategoryLabel(category: PoiCategory) {
-    const labels: Record<PoiCategory, string> = {
-      exhibition: '전시',
-      performance: '공연',
-      gallery: '갤러리',
-      popup: '팝업',
-      class: '클래스',
-      wineBar: '와인바',
-      walk: '산책',
-      cafe: '카페',
-      restaurant: '미식',
-      culture: '문화·예술',
-    }
-    return labels[category] ?? category
-  }
-
-  private getMarkerPresentation(category: PoiCategory) {
+  private getMarkerAsset(category: PoiCategory) {
     const diningCategories: PoiCategory[] = ['cafe', 'wineBar', 'popup', 'class', 'restaurant']
     const isDining = diningCategories.includes(category)
     return {
-      color: isDining ? '#ff6b3b' : '#8cc341',
-      glyph: isDining ? '식' : '문',
+      src: isDining ? restaurantPin : culturePin,
+      size: new this.kakaoMaps!.Size(32, 32),
+      offset: new this.kakaoMaps!.Point(16, 16),
     }
   }
 }

@@ -98,3 +98,7 @@
   color: inherit;
   opacity: 0.85;
 }
+
+.map-overlay--hidden {
+  display: none;
+}

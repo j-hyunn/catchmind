@@ -14,11 +14,12 @@ import {
   Star,
 } from 'lucide-react'
 
-import mapVisualizationData from '/Map Visualization Data.json'
+import mapVisualizationData from '../../../../Map Visualization Data.json'
 import { fetchPoiById } from '@/services/poi/poiApi'
 import { poiService } from '@/services/poi/poiService'
-import type { LifestylePoi } from '@/types/poi'
+import type { LifestylePoi, PoiCategory } from '@/types/poi'
 import { getMockRating, mapCategoryLabel } from '@/utils/poi'
+import { RestaurantBottomSheet } from '@/components/poi/RestaurantBottomSheet'
 
 import './RestaurantPoiDetailPage.css'
 
@@ -74,15 +75,15 @@ export function RestaurantPoiDetailPage() {
     return () => controller.abort()
   }, [poiId])
 
-  const nearbyRestaurants = useMemo(() => {
+  const nearbyCulturePlaces = useMemo(() => {
     if (!poi) {
       return []
     }
     const baseLat = Number(poi.lat ?? '0')
     const baseLng = Number(poi.lng ?? '0')
     return (
-      (mapVisualizationData as RestaurantMapEntry[])
-        .filter(entry => entry.category === 'restaurant' && entry.name !== poi.name)
+      mapVisualizationData
+        .filter(entry => entry.category === 'culture')
         .map((entry): NearbyRestaurant => ({
           ...entry,
           distance: Math.hypot(baseLat - Number(entry.lat), baseLng - Number(entry.lng)),
@@ -113,15 +114,6 @@ export function RestaurantPoiDetailPage() {
 
   const { rating, reviews } = getMockRating(poi)
   const galleryImages: (string | undefined)[] = Array.from({ length: 5 }, (_, idx) => poi.images?.[idx])
-  const basePrice = poi.sessions?.[0]?.price ?? 24000
-  const childPrice = Math.round((basePrice * 0.7) / 100) * 100
-  const priceRows = [
-    { label: '성인', price: basePrice },
-    { label: '어린이·청소년', price: childPrice || undefined },
-  ]
-  const descriptor = CULTURE_CATEGORIES.includes(poi.category)
-    ? '전체 관람가'
-    : `${mapCategoryLabel(poi.category)} 추천`
   const totalImages = galleryImages.filter(Boolean).length || galleryImages.length
 
   const handleCarouselScroll = () => {
@@ -182,14 +174,15 @@ export function RestaurantPoiDetailPage() {
         </div>
 
         <section className="poi-detail__info-block">
-          <div className="restaurant-info-header">
-            <span className="restaurant-info-subtitle">{descriptor}</span>
+          <div className="poi-detail__info-title-row">
+            <div className="restaurant-info-title-group">
+              <div className="poi-detail__info-title">{poi.name}</div>
+            </div>
             <button type="button" className="restaurant-info-call">
               <Phone size={16} />
               전화
             </button>
           </div>
-          <div className="poi-detail__info-title">{poi.name}</div>
           <div className="poi-detail__info-rating">
             <Star size={14} />
             <strong>{rating}</strong>
@@ -198,7 +191,6 @@ export function RestaurantPoiDetailPage() {
               리뷰 보기 ▸
             </button>
           </div>
-          <div className="poi-detail__info-tagline">{poi.description}</div>
           <div className="poi-detail__info-body">
             <div className="poi-detail__info-line">
               <MapPin size={16} />
@@ -382,32 +374,6 @@ export function RestaurantPoiDetailPage() {
         </section>
         <div className="poi-detail__section-divider" />
         <section className="poi-detail__tab-content" data-tab="취소 및 환불">
-          <div className="poi-detail__section-block">
-            <div className="poi-detail__panel-title">취소 및 환불 규정</div>
-            <div className="poi-detail__panel-text">
-              예매 취소 조건보다 취소 수수료 규정이 우선 적용됩니다.<br />
-              예매 당일 자정(밤 12시) 이전 취소시 티켓 취소수수료가 없으며,
-              예매 수수료도 환불됩니다.(취소기한 내 한함)
-            </div>
-            <div className="poi-detail__panel-text">
-              취소수수료 규정<br />
-              관람일 기준 아래와 같이 취소 수수료가 적용됩니다.<br />
-              취소 기한은 예매 후 [상세 예약 내역]에서 확인해 주세요.
-            </div>
-            <div className="poi-detail__alert-row poi-detail__alert-row--important">
-              <span>취소 기간 내 취소 시</span>
-              <strong>티켓 금액의 10%</strong>
-            </div>
-            <div className="poi-detail__panel-subtitle">예매 취소 조건</div>
-            <div className="poi-detail__panel-text">
-              예매 후 7일 이내 취소시 티켓 금액 전액이 환불됩니다.
-              <br />
-              (예매 수수료 제외)
-            </div>
-          </div>
-        </section>
-        <div className="poi-detail__section-divider" />
-        <section className="poi-detail__tab-content" data-tab="취소 및 환불">
           <div className="poi-detail__section-block poi-detail__experience">
             <div className="poi-detail__experience-header">
               <span className="poi-detail__panel-title">함께 가볼 만한 곳</span>
@@ -416,10 +382,24 @@ export function RestaurantPoiDetailPage() {
               </button>
             </div>
             <div className="poi-detail__experience-list">
-              {nearbyRestaurants.map(place => {
+              {nearbyCulturePlaces.map(place => {
                 const locationArea = place.address.split(' ')[1] ?? place.address
+                const placeRating = getExperienceRating(place.name)
+                const placeType = place.type ?? mapCategoryLabel(place.category as PoiCategory)
                 return (
-                  <article key={place.name} className="poi-detail__experience-card">
+                  <article
+                    key={place.name}
+                    className="poi-detail__experience-card"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate(`/poi/${place.id}`)}
+                    onKeyDown={event => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        navigate(`/poi/${place.id}`)
+                      }
+                    }}
+                  >
                     <div className="poi-detail__experience-media" />
                     <div className="poi-detail__experience-body">
                       <div className="poi-detail__experience-title-row">
@@ -430,9 +410,9 @@ export function RestaurantPoiDetailPage() {
                       </div>
                       <div className="poi-detail__experience-meta">
                         <Star size={14} />
-                        <strong>5.0</strong>
+                        <strong>{placeRating}</strong>
                         <span>
-                          {mapCategoryLabel(place.category)} · {locationArea}
+                          {placeType} · {locationArea}
                         </span>
                       </div>
                     </div>
@@ -445,30 +425,21 @@ export function RestaurantPoiDetailPage() {
         <div className="poi-detail__spacer" />
       </div>
 
-      <footer className="poi-detail__bottom">
-        <button type="button" className="poi-detail__bookmark">
-          <Bookmark size={18} />
-        </button>
-        <button type="button" className="poi-detail__primary">
-          예매하기
-        </button>
-      </footer>
+      <RestaurantBottomSheet onBookmark={() => {}} onPrimaryAction={() => {}} />
     </section>
   )
 }
 
-const DETAIL_TABS = ['상품 상세', '메뉴', '할인 정보', '취소 및 환불']
-const CULTURE_CATEGORIES: LifestylePoi['category'][] = ['exhibition', 'performance', 'gallery', 'popup', 'class', 'walk']
+const DETAIL_TABS = ['상품 상세', '메뉴', '할인 정보']
 
-type RestaurantMapEntry = {
-  category: string
-  name: string
-  address: string
-  lat: string
-  lng: string
-  url: string
-}
+type RestaurantMapEntry = (typeof mapVisualizationData)[number]
 
 type NearbyRestaurant = RestaurantMapEntry & {
   distance: number
+}
+
+function getExperienceRating(name: string) {
+  const base = name ? name.charCodeAt(0) : 0
+  const rating = 4 + (base % 6) / 10
+  return rating.toFixed(1)
 }

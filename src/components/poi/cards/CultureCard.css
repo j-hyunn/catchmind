@@ -1,0 +1,102 @@
+.culture-card {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+}
+
+.culture-card[role='button'] {
+  cursor: pointer;
+}
+
+.culture-card:focus-visible {
+  outline: 2px solid rgba(255, 99, 0, 0.5);
+  outline-offset: 4px;
+}
+
+.culture-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.culture-card__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1c1c1c;
+}
+
+.culture-card__save {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #222;
+  cursor: pointer;
+}
+
+.culture-card__meta {
+  margin: 0.5rem 0 0.75rem;
+  font-size: 13px;
+  color: #7a7f87;
+}
+
+.culture-card__meta-rating {
+  color: #f97316;
+  font-weight: 700;
+}
+
+.culture-card__meta-reviews {
+  margin-left: 0.1rem;
+}
+
+.culture-card__meta strong {
+  color: #f97316;
+  font-weight: 700;
+}
+
+.culture-card__image-wrapper {
+  width: 100%;
+  height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  background: #eee;
+}
+
+.culture-card__image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.culture-card__placeholder {
+  width: 100%;
+  height: 100%;
+  background: #e5e5e5;
+}
+
+.culture-card__info {
+  font-size: 13px;
+  color: #444;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.culture-card__info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
+}
+
+.culture-card__reserve {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  background: #ff3d00;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 0;
+  cursor: pointer;
+}

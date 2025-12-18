@@ -13,10 +13,10 @@ import {
   Star,
 } from 'lucide-react'
 
-import mapVisualizationData from '/Map Visualization Data.json'
+import mapVisualizationData from '../../../../Map Visualization Data.json'
 import { fetchPoiById } from '@/services/poi/poiApi'
 import { poiService } from '@/services/poi/poiService'
-import type { LifestylePoi } from '@/types/poi'
+import type { LifestylePoi, PoiCategory } from '@/types/poi'
 import { getMockRating, mapCategoryLabel } from '@/utils/poi'
 
 import './CulturePoiDetailPage.css'
@@ -39,7 +39,7 @@ export function CulturePoiDetailPage() {
     const baseLat = Number(poi.lat ?? '0')
     const baseLng = Number(poi.lng ?? '0')
     return (
-      (mapVisualizationData as RestaurantMapEntry[])
+      mapVisualizationData
         .filter(entry => entry.category === 'restaurant' && entry.name !== poi.name)
         .map((entry): NearbyRestaurant => ({
           ...entry,
@@ -187,9 +187,8 @@ export function CulturePoiDetailPage() {
 
         <section className="poi-detail__info-block">
           <div className="poi-detail__info-title">{poi.name}</div>
-          <div className="poi-detail__audience">{descriptor}</div>
-          <div className="poi-detail__info-tagline">{poi.description}</div>
-          <div className="poi-detail__info-rating">
+          <div className="culture-detail__audience">{poi.audience ?? descriptor}</div>
+          <div className="culture-detail__info-rating">
             <Star size={14} />
             <strong>{rating}</strong>
             <span>리뷰 {reviews}개</span>
@@ -334,8 +333,22 @@ export function CulturePoiDetailPage() {
             <div className="poi-detail__experience-list">
               {nearbyRestaurants.map(place => {
                 const locationArea = place.address.split(' ')[1] ?? place.address
+                const placeRating = getExperienceRating(place.name)
+                const placeType = place.type ?? mapCategoryLabel(place.category as PoiCategory)
                 return (
-                  <article key={place.name} className="poi-detail__experience-card">
+                  <article
+                    key={place.name}
+                    className="poi-detail__experience-card"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate(`/poi/${place.id}`)}
+                    onKeyDown={event => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        navigate(`/poi/${place.id}`)
+                      }
+                    }}
+                  >
                     <div className="poi-detail__experience-media" />
                     <div className="poi-detail__experience-body">
                       <div className="poi-detail__experience-title-row">
@@ -346,9 +359,9 @@ export function CulturePoiDetailPage() {
                       </div>
                       <div className="poi-detail__experience-meta">
                         <Star size={14} />
-                        <strong>5.0</strong>
+                        <strong>{placeRating}</strong>
                         <span>
-                          {mapCategoryLabel(place.category)} · {locationArea}
+                          {placeType} · {locationArea}
                         </span>
                       </div>
                     </div>
@@ -376,15 +389,14 @@ export function CulturePoiDetailPage() {
 const DETAIL_TABS = ['상품 상세', '가격', '할인 정보', '취소 및 환불']
 const CULTURE_CATEGORIES: LifestylePoi['category'][] = ['exhibition', 'performance', 'gallery', 'popup', 'class', 'walk']
 
-type RestaurantMapEntry = {
-  category: string
-  name: string
-  address: string
-  lat: string
-  lng: string
-  url: string
-}
+type RestaurantMapEntry = (typeof mapVisualizationData)[number]
 
 type NearbyRestaurant = RestaurantMapEntry & {
   distance: number
+}
+
+function getExperienceRating(name: string) {
+  const base = name ? name.charCodeAt(0) : 0
+  const rating = 4 + (base % 6) / 10
+  return rating.toFixed(1)
 }

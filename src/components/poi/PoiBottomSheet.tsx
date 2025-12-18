@@ -1,12 +1,16 @@
-import type { KeyboardEvent } from 'react'
-
-import { Bookmark, ChevronDown, SlidersHorizontal, Star } from 'lucide-react'
+import { ArrowLeft, Calendar, ChevronDown } from 'lucide-react'
 
 import type { LifestylePoi, PoiCategory } from '@/types/poi'
 import { calculateDistanceInKm, formatDistanceMeters } from '@/utils/geo'
 import { getMockRating, mapCategoryLabel } from '@/utils/poi'
+import type { CategoryChip } from '@/components/map/MapOverlay'
+import { CultureCard } from '@/components/poi/cards/CultureCard'
+import { RestaurantCard } from '@/components/poi/cards/RestaurantCard'
+import type { ReservationDate } from '@/components/poi/cards/RestaurantCard'
 
 import './PoiBottomSheet.css'
+
+type CategoryFilter = 'all' | PoiCategory
 
 interface PoiBottomSheetProps {
   poi?: LifestylePoi
@@ -14,13 +18,12 @@ interface PoiBottomSheetProps {
   referencePoint?: { lat: number; lng: number }
   radiusLabel: string
   onRadiusChange: () => void
-  onFilterChange: () => void
-  onNearbyClick: () => void
-  filterLabel: string
-  distanceLabel?: string
-  expanded: boolean
-  onToggleExpand: () => void
-  onPoiClick: (poi: LifestylePoi) => void
+  sheetState: 'folded' | 'unfolded'
+  onToggleSheetState: () => void
+  categoryFilter: CategoryFilter
+  onCategoryChange: (value: CategoryFilter) => void
+  categories: CategoryChip<CategoryFilter>[]
+  onPoiSelect: (poi: LifestylePoi) => void
 }
 
 export function PoiBottomSheet({
@@ -29,167 +32,164 @@ export function PoiBottomSheet({
   referencePoint,
   radiusLabel,
   onRadiusChange,
-  onFilterChange,
-  onNearbyClick,
-  filterLabel,
-  distanceLabel,
-  expanded,
-  onToggleExpand,
-  onPoiClick,
+  sheetState,
+  onToggleSheetState,
+  categoryFilter,
+  onCategoryChange,
+  categories,
+  onPoiSelect,
 }: PoiBottomSheetProps) {
+  const isUnfolded = sheetState === 'unfolded'
+  const visiblePois = isUnfolded ? pois : poi ? [poi] : []
+
+  const buildDates = (item: LifestylePoi): ReservationDate[] => {
+    const { sessions } = item
+    if (sessions && sessions.length > 0) {
+      return sessions.slice(0, 4).map(session => ({
+        label: session.time,
+        status: session.status === 'available' ? 'open' : 'closed',
+      }))
+    }
+
+    const today = new Date()
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토']
+    return Array.from({ length: 5 }, (_, idx) => {
+      const date = new Date(today)
+      date.setDate(today.getDate() + idx)
+      const dayLabel = dayNames[date.getDay()]
+      const baseLabel =
+        idx === 0
+          ? `오늘(${dayLabel})`
+          : idx === 1
+            ? `내일(${dayLabel})`
+            : `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}(${dayLabel})`
+      return {
+        label: baseLabel,
+        status: idx <= 1 ? 'closed' : 'open',
+      }
+    })
+  }
+
+  const getDistanceLabel = (item: LifestylePoi) => {
+    if (!referencePoint) return undefined
+    const meters = calculateDistanceInKm(referencePoint.lat, referencePoint.lng, item.lat, item.lng) * 1000
+    return `내 위치에서 ${formatDistanceMeters(meters)}`
+  }
+
   return (
-    <section className={`poi-bottom-sheet ${expanded ? 'poi-bottom-sheet--expanded' : ''}`}>
-      <button type="button" className="poi-bottom-sheet__handle" onClick={onToggleExpand} aria-label="바텀 시트 확장/축소">
+    <section className={`poi-bottom-sheet poi-bottom-sheet--${isUnfolded ? 'unfolded' : 'folded'}`}>
+      <button
+        type="button"
+        className="poi-bottom-sheet__handle"
+        onClick={onToggleSheetState}
+        aria-label="바텀 시트 확장/축소"
+        aria-expanded={isUnfolded}
+      >
         <span />
       </button>
 
       <div className="poi-bottom-sheet__controls">
+        {isUnfolded && (
+          <>
+            <div className="poi-bottom-sheet__search-card">
+              <button type="button" className="poi-bottom-sheet__search-field">
+                <ArrowLeft size={18} />
+                <span className="poi-bottom-sheet__search-placeholder">찾고 싶은게 있나요?</span>
+                <span className="poi-bottom-sheet__search-divider" aria-hidden />
+              </button>
+              <button type="button" className="poi-bottom-sheet__date-button">
+                <Calendar size={18} />
+                <span>날짜 · 인원</span>
+              </button>
+            </div>
+            <div className="poi-bottom-sheet__category-tabs" role="tablist">
+              {categories.map(tab => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={categoryFilter === tab.value}
+                  className={`poi-bottom-sheet__category-tab ${
+                    categoryFilter === tab.value ? 'poi-bottom-sheet__category-tab--active' : ''
+                  }`}
+                  onClick={() => onCategoryChange(tab.value)}
+                >
+                  <span>{tab.label}</span>
+                  {typeof tab.count === 'number' && <small>{tab.count.toLocaleString()}</small>}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         <button type="button" className="poi-bottom-sheet__radius-button" onClick={onRadiusChange}>
           주변 {radiusLabel}
           <ChevronDown size={18} />
         </button>
-
-        <div className="poi-bottom-sheet__filter-row">
-          <button type="button" className="poi-bottom-sheet__filter-button">
-            추천순
-            <ChevronDown size={14} />
-          </button>
-          <button type="button" className="poi-bottom-sheet__filter-button" onClick={onFilterChange}>
-            <SlidersHorizontal size={16} />
-            {filterLabel}
-          </button>
-          <button
-            type="button"
-            className="poi-bottom-sheet__filter-button poi-bottom-sheet__filter-button--accent"
-            onClick={onNearbyClick}
-          >
-            내 주변
-          </button>
-        </div>
       </div>
 
-      <div className={`poi-bottom-sheet__content ${expanded ? 'poi-bottom-sheet__content--expanded' : ''}`}>
-        {expanded ? (
-          <div className="poi-bottom-sheet__list">
-            {pois.map(item =>
-              renderPoiCard({
-                poi: item,
-                referencePoint,
-                onPoiClick,
-              }),
-            )}
-          </div>
-        ) : (
-          poi &&
-          renderPoiCard({
-            poi,
-            referencePoint,
-            distanceLabel,
-            onPoiClick,
-          })
-        )}
+      <div className={`poi-bottom-sheet__content ${isUnfolded ? 'poi-bottom-sheet__content--expanded' : ''}`}>
+        <div className="poi-bottom-sheet__list">
+          {visiblePois.map((item, index) => {
+            const { rating, reviews } = getMockRating(item)
+            const distanceLabel = getDistanceLabel(item)
+            const isRestaurant = item.category === 'restaurant'
+            return (
+              <div key={item.id} className="poi-bottom-sheet__list-item">
+                {isRestaurant ? (
+                  <RestaurantCard
+                    name={item.name}
+                    rating={rating}
+                    reviewCount={reviews}
+                    categoryLabel={item.type ?? mapCategoryLabel(item.category)}
+                    location={item.address}
+                    distanceLabel={distanceLabel}
+                    images={item.images}
+                    openHours={item.openHours}
+                    priceLabel={buildPriceLabel(item)}
+                    dates={buildDates(item)}
+                    onSelect={() => onPoiSelect(item)}
+                  />
+                ) : (
+                  <CultureCard
+                    poi={item}
+                    distanceLabel={distanceLabel}
+                    onSelect={() => onPoiSelect(item)}
+                    onReserve={() => onPoiSelect(item)}
+                  />
+                )}
+                {index < visiblePois.length - 1 && <div className="poi-bottom-sheet__divider" aria-hidden="true" />}
+              </div>
+            )
+          })}
+        </div>
       </div>
     </section>
   )
 }
 
-function renderPoiCard({
-  poi,
-  referencePoint,
-  distanceLabel,
-  onPoiClick,
-}: {
-  poi: LifestylePoi
-  referencePoint?: { lat: number; lng: number }
-  distanceLabel?: string
-  onPoiClick: (poi: LifestylePoi) => void
-}) {
-  const { rating, reviews } = getMockRating(poi)
-  const computedDistance =
-    referencePoint != null
-      ? formatDistanceMeters(
-          calculateDistanceInKm(referencePoint.lat, referencePoint.lng, poi.lat, poi.lng) * 1000,
-        )
-      : undefined
-  const displayDistance = distanceLabel ?? computedDistance
-  const locationText = formatPoiLocation(poi.address)
-  const descriptor = formatPoiDescriptor(poi)
-  const gallerySources: (string | undefined)[] = Array.from({ length: 5 }, (_, index) => poi.images?.[index])
-
-  const handleCardClick = () => onPoiClick(poi)
-  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      onPoiClick(poi)
+function buildPriceLabel(poi: LifestylePoi) {
+  const [first, second] = poi.sessions ?? []
+  const formatWon = (value?: number) => {
+    if (!value || Number.isNaN(value)) {
+      return undefined
     }
+    return value % 10000 === 0 ? `${value / 10000}만원` : `${value.toLocaleString()}원`
   }
 
-  return (
-    <article
-      key={poi.id}
-      className="poi-bottom-sheet__poi-card"
-      role="button"
-      tabIndex={0}
-      onClick={handleCardClick}
-      onKeyDown={handleKeyDown}
-    >
-      <div className="poi-bottom-sheet__poi-header">
-        <div>
-          <p className="poi-bottom-sheet__poi-category">{mapCategoryLabel(poi.category)}</p>
-          <h3>{poi.name}</h3>
-        </div>
-        <button
-          type="button"
-          aria-label="저장"
-          onClick={event => {
-            event.stopPropagation()
-          }}
-        >
-          <Bookmark size={20} />
-        </button>
-      </div>
+  const fallbackSeed = poi.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  const lunchFallback = 30000 + ((fallbackSeed % 4) + 1) * 5000
+  const dinnerFallback = lunchFallback + 60000 + (fallbackSeed % 3) * 5000
 
-      <p className="poi-bottom-sheet__poi-rating">
-        <span className="poi-bottom-sheet__star">
-          <Star size={12} />
-        </span>
-        <strong>{rating}</strong>
-        <span>({reviews})</span>
-        {locationText && <span>· {locationText}</span>}
-        {descriptor && <span>· {descriptor}</span>}
-        {displayDistance && <span>· {displayDistance}</span>}
-      </p>
+  const lunch = formatWon(first?.price ?? lunchFallback)
+  const dinner = formatWon(second?.price ?? dinnerFallback)
 
-      <div className="poi-bottom-sheet__carousel" role="group" aria-label={`${poi.name} 이미지`}>
-        <div className="poi-bottom-sheet__carousel-track">
-          {gallerySources.map((src, index) => (
-            <div key={`${poi.id}-image-${index}`} className="poi-bottom-sheet__carousel-item">
-              {src ? (
-                <img src={src} alt={`${poi.name} 이미지 ${index + 1}`} loading="lazy" />
-              ) : (
-                <div className="poi-bottom-sheet__carousel-placeholder" />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </article>
-  )
-}
-
-const CULTURE_CATEGORIES: PoiCategory[] = ['exhibition', 'performance', 'gallery', 'popup', 'class', 'walk', 'culture']
-
-function formatPoiLocation(address: string) {
-  if (!address) {
-    return ''
+  if (!lunch && !dinner) {
+    return undefined
   }
-  const parts = address.split(' ')
-  return parts.slice(0, 3).join(' ')
-}
 
-function formatPoiDescriptor(poi: LifestylePoi) {
-  if (CULTURE_CATEGORIES.includes(poi.category)) {
-    return '전체 관람가'
+  if (lunch && dinner) {
+    return `점심 ${lunch} · 저녁 ${dinner}`
   }
-  return '파인다이닝 · 코스'
+
+  return lunch ? `1인 ${lunch}` : `1인 ${dinner}`
 }

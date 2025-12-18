@@ -31,26 +31,7 @@
   color: #fecaca;
 }
 
-/* Kakao InfoWindow custom style */
-.poi-infowindow {
-  background-color: #0f172a;
-  color: #fff;
-  padding: 0.6rem 0.9rem;
-  border-radius: 0.75rem;
-  font-size: 0.85rem;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.35);
-}
 
-.poi-infowindow strong {
-  display: block;
-  font-size: 0.95rem;
-  margin-bottom: 0.2rem;
-}
-
-.poi-infowindow span {
-  font-size: 0.75rem;
-  color: #cbd5f5;
-}
 
 @media (min-width: 768px) {
   .map-view {

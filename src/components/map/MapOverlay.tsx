@@ -12,15 +12,17 @@ interface MapOverlayProps<V extends string = string> {
   categories: CategoryChip<V>[]
   selectedCategory: V
   onCategoryChange: (value: V) => void
+  visible?: boolean
 }
 
 export function MapOverlay<V extends string>({
   categories,
   selectedCategory,
   onCategoryChange,
+  visible = true,
 }: MapOverlayProps<V>) {
   return (
-    <div className="map-overlay">
+    <div className={`map-overlay ${visible ? '' : 'map-overlay--hidden'}`}>
       <div className="map-overlay__status">
         <span className="map-overlay__time">9:41</span>
         <div className="map-overlay__status-icons" aria-hidden>

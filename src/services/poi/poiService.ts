@@ -1,72 +1,67 @@
 import type { LifestylePoi, PoiCategory, ReservationType } from '@/types/poi'
-import { parseCsv } from '@/utils/csv'
+import mapVisualizationData from '../../../Map Visualization Data.json'
 
-import rawCsv from '@/data/map-visualization-data.csv?raw'
+type JsonRecord = {
+  id?: string
+  category: 'restaurant' | 'culture'
+  name: string
+  address: string
+  lat: string | number
+  lng: string | number
+  url?: string
+  type?: string
+}
 
-type CsvRecord = {
+type NormalizedRecord = {
+  id: string
   category: 'restaurant' | 'culture'
   name: string
   address: string
   lat: number
   lng: number
   url?: string
+  type?: string
+  audience?: string
 }
 
-const DEFAULT_HOURS: Record<CsvRecord['category'], string> = {
+const DEFAULT_HOURS: Record<JsonRecord['category'], string> = {
   restaurant: '11:00-22:00',
   culture: '10:00-20:00',
 }
 
-const DEFAULT_RESERVATION: Record<CsvRecord['category'], ReservationType> = {
+const DEFAULT_RESERVATION: Record<JsonRecord['category'], ReservationType> = {
   restaurant: 'FREE_RESERVATION',
   culture: 'NONE',
 }
 
-function toCsvRecords(content: string): CsvRecord[] {
-  const rows = parseCsv(content)
-  const [header, ...dataRows] = rows
-  if (!header) {
-    return []
-  }
-  const columnIndex = (column: string) => header.findIndex(cell => cell.toLowerCase() === column)
-
-  const idxCategory = columnIndex('category')
-  const idxName = columnIndex('name')
-  const idxAddress = columnIndex('address')
-  const idxLat = columnIndex('lat')
-  const idxLng = columnIndex('lng')
-  const idxUrl = columnIndex('url')
-
-  return dataRows
-    .map(row => {
-      const category = row[idxCategory] as CsvRecord['category']
-      const name = row[idxName]
-      const address = row[idxAddress]
-      const lat = Number(row[idxLat])
-      const lng = Number(row[idxLng])
-      const url = idxUrl >= 0 ? row[idxUrl] : undefined
-
-      if (!category || !name || !address || Number.isNaN(lat) || Number.isNaN(lng)) {
+function toJsonRecords(entries: JsonRecord[]): NormalizedRecord[] {
+  const categoryCounts: Record<string, number> = {}
+  return entries
+    .map(entry => {
+      const lat = Number(entry.lat)
+      const lng = Number(entry.lng)
+      if (!entry.category || !entry.name || !entry.address || Number.isNaN(lat) || Number.isNaN(lng)) {
         return null
       }
-
+      const count = categoryCounts[entry.category] ?? 0
+      categoryCounts[entry.category] = count + 1
+      const id =
+        entry.id ??
+        `${entry.category}-${String(count).padStart(3, '0')}`
       return {
-        category,
-        name,
-        address,
+        ...entry,
+        id,
         lat,
         lng,
-        url,
-      } as CsvRecord
+      } as NormalizedRecord
     })
-    .filter((record): record is CsvRecord => Boolean(record))
+    .filter((entry): entry is NormalizedRecord => Boolean(entry))
 }
 
-const csvRecords = toCsvRecords(rawCsv)
+const jsonRecords = toJsonRecords(mapVisualizationData as JsonRecord[])
 
-function synthesizePoi(record: CsvRecord, index: number): LifestylePoi {
-  const { category, name, address, lat, lng, url } = record
-  const id = `${category}-${index.toString().padStart(3, '0')}`
+function synthesizePoi(record: NormalizedRecord): LifestylePoi {
+  const { id, category, name, address, lat, lng, url } = record
   const description =
     category === 'restaurant'
       ? `${name} · 앵커 다이닝 기반 추천 미식 공간`
@@ -95,10 +90,12 @@ function synthesizePoi(record: CsvRecord, index: number): LifestylePoi {
     images: [],
     dataSource: 'manual',
     sourceUrl: url,
+    type: record.type,
+    audience: record.audience,
   }
 }
 
-const lifestylePois: LifestylePoi[] = csvRecords.map(synthesizePoi)
+const lifestylePois: LifestylePoi[] = jsonRecords.map(synthesizePoi)
 
 export const poiService = {
   listLifestylePois: (): LifestylePoi[] => lifestylePois,

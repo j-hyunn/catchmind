@@ -45,4 +45,6 @@ export interface LifestylePoi {
   images?: string[]
   dataSource?: 'public' | 'partner' | 'manual'
   sourceUrl?: string
+  type?: string
+  audience?: string
 }

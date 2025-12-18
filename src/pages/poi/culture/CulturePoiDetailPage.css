@@ -41,9 +41,8 @@
   padding-bottom: 5rem;
 }
 
-.poi-detail__audience {
-  margin: 0.35rem 0 0;
-  color: #ff5a00;
+.culture-detail__audience {
+  color: #4b5563;
   font-weight: 600;
   font-size: 0.9rem;
 }
@@ -60,7 +59,7 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.9rem;
-  color: #4b5563;
+  color: #ff5a00;
   margin-top: 0.5rem;
 }
 
@@ -92,10 +91,14 @@
   line-height: 1.5;
 }
 
-.poi-detail__info-rating {
+.culture-detail__info-rating {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  color: #ff5a00;
+}
+
+.culture-detail__info-rating span {
   color: #4b5563;
 }
 
@@ -337,7 +340,7 @@
 }
 
 .poi-detail__experience-card {
-  min-width: 300px;
+  width: 260px;
   min-height: 220px;
   background: #fff;
   border-radius: 1rem;
@@ -495,9 +498,8 @@
 }
 
 .poi-detail__bookmark {
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: none;
   background: #fff;
-  border-radius: 0.9rem;
   display: flex;
   align-items: center;
   justify-content: center;
