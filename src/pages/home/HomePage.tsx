@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { MapOverlay } from '@/components/map/MapOverlay'
 import { MapView } from '@/components/map/MapView'
@@ -15,10 +15,19 @@ type RadiusFilter = 100 | 500 | 3000
 
 const radiusOptions: RadiusFilter[] = [100, 500, 3000]
 
+const locationFilterCategory = (state: unknown): CategoryFilter | null => {
+  if (state && typeof state === 'object' && 'filterCategory' in state && state.filterCategory) {
+    return state.filterCategory as CategoryFilter
+  }
+  return null
+}
+
 export function HomePage() {
   const allPois = useMemo<LifestylePoi[]>(() => poiService.listLifestylePois(), [])
+  const { state: locationState } = useLocation()
+  const initialCategory = locationFilterCategory(locationState) ?? 'all'
   const [selectedPoiId, setSelectedPoiId] = useState<string | undefined>(allPois[0]?.id)
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all')
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>(initialCategory)
   const [radiusFilter, setRadiusFilter] = useState<RadiusFilter>(3000)
   const [sheetState, setSheetState] = useState<'folded' | 'unfolded'>('folded')
   const navigate = useNavigate()
@@ -84,6 +93,13 @@ export function HomePage() {
     }
   }, [sheetState])
 
+  useEffect(() => {
+    const routeCategory = locationFilterCategory(locationState)
+    if (routeCategory) {
+      setCategoryFilter(routeCategory)
+    }
+  }, [locationState])
+
   const handlePoiSelect = (poi: LifestylePoi) => {
     setSelectedPoiId(poi.id)
     navigate(`/poi/${poi.id}`)
@@ -123,11 +139,14 @@ export function HomePage() {
           radiusLabel={formatRadius(radiusFilter)}
           onRadiusChange={handleRadiusCycle}
           sheetState={sheetState}
-          onToggleSheetState={handleToggleSheetState}
+          onToggleSheetState={() => {
+            setSheetState(prev => (prev === 'folded' ? 'unfolded' : 'folded'))
+          }}
           categoryFilter={categoryFilter}
           onCategoryChange={value => setCategoryFilter(value)}
           categories={categories}
           onPoiSelect={handlePoiSelect}
+          autoUnfold={Boolean(locationFilterCategory(locationState))}
         />
       </section>
 

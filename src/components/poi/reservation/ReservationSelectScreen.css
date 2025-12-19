@@ -567,22 +567,34 @@
 
 .success-card {
   margin: 0 auto 8px;
-  max-width: 280px;
+  width: 100%;
+  max-width: 360px;
   background: #fff;
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+}
+
+.success-card__info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 .success-thumb {
-  width: 100%;
-  aspect-ratio: 1 / 1;
+  width: 72px;
+  height: 72px;
   border-radius: 12px;
   background: linear-gradient(135deg, #f2f2f2, #d9d9d9);
+}
+
+.success-meta-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .success-meta-title {
@@ -594,6 +606,17 @@
   margin: 0;
   color: #6b7280;
   font-size: 14px;
+}
+
+.success-detail-btn {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #111;
+  font-size: 13px;
+  border-radius: 12px;
+  padding: 10px 16px;
+  align-self: stretch;
+  width: 100%;
 }
 
 .recommend-section {
@@ -679,27 +702,33 @@
   color: #8b8b8b;
 }
 
-.bookmark-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  border: none;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.bookmark-btn.active {
-  background: #ff6f1f;
-  color: #fff;
-}
-
 .success-recommend-list {
   margin-top: 4px;
   padding-bottom: 0.5rem;
+}
+
+.success-footer {
+  margin-top: auto;
+  padding: 16px 20px calc(env(safe-area-inset-bottom, 0) + 20px);
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+  width: 100%;
+}
+
+.success-footer__cta {
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ff6b2c, #ff944c);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px;
+  cursor: pointer;
+}
+
+.success-footer__cta:active {
+  opacity: 0.9;
 }
 
 /* reuse experience card design */

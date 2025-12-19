@@ -126,14 +126,15 @@
   color: #475467;
   border-bottom: 2px solid transparent;
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 0.15rem;
+  justify-content: center;
+  gap: 0.25rem;
   min-width: 64px;
 }
 
 .poi-bottom-sheet__category-tab small {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: #9ca3af;
 }
 

@@ -24,6 +24,7 @@ interface PoiBottomSheetProps {
   onCategoryChange: (value: CategoryFilter) => void
   categories: CategoryChip<CategoryFilter>[]
   onPoiSelect: (poi: LifestylePoi) => void
+  autoUnfold?: boolean
 }
 
 export function PoiBottomSheet({
@@ -38,8 +39,9 @@ export function PoiBottomSheet({
   onCategoryChange,
   categories,
   onPoiSelect,
+  autoUnfold = false,
 }: PoiBottomSheetProps) {
-  const isUnfolded = sheetState === 'unfolded'
+  const isUnfolded = sheetState === 'unfolded' || autoUnfold
   const visiblePois = isUnfolded ? pois : poi ? [poi] : []
 
   const buildDates = (item: LifestylePoi): ReservationDate[] => {

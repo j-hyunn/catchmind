@@ -14,6 +14,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { RestaurantBottomSheet } from '@/components/poi/RestaurantBottomSheet'
+import {
+  RestaurantReserveBottomSheet,
+  type RestaurantReservationSelection,
+  type SerializedRestaurantReservationSelection,
+} from '@/components/poi/reservation/RestaurantReserveBottomSheet'
 import { fetchPoiById } from '@/services/poi/poiApi'
 import { poiService } from '@/services/poi/poiService'
 import type { LifestylePoi, PoiCategory } from '@/types/poi'
@@ -33,6 +38,7 @@ export function RestaurantPoiDetailPage() {
   const [activeTab, setActiveTab] = useState(DETAIL_TABS[0])
   const carouselTrackRef = useRef<HTMLDivElement | null>(null)
   const carouselContainerRef = useRef<HTMLDivElement | null>(null)
+  const [isReserveSheetOpen, setReserveSheetOpen] = useState(false)
 
   useEffect(() => {
     if (!poiId) {
@@ -127,6 +133,17 @@ export function RestaurantPoiDetailPage() {
     const offset = carouselTrackRef.current.scrollLeft
     const index = Math.round(offset / containerWidth) + 1
     setCurrentImageIndex(Math.min(Math.max(index, 1), totalImages))
+  }
+
+  const handleProceedReservation = (selection: RestaurantReservationSelection) => {
+    setReserveSheetOpen(false)
+    if (poiId) {
+      const serializedSelection: SerializedRestaurantReservationSelection = {
+        ...selection,
+        date: selection.date.toISOString(),
+      }
+      navigate(`/poi/${poiId}/reservation/confirm`, { state: { selection: serializedSelection } })
+    }
   }
 
   return (
@@ -425,7 +442,8 @@ export function RestaurantPoiDetailPage() {
         <div className="poi-detail__spacer" />
       </div>
 
-      <RestaurantBottomSheet onBookmark={() => {}} onPrimaryAction={() => {}} />
+      <RestaurantBottomSheet onBookmark={() => {}} onPrimaryAction={() => setReserveSheetOpen(true)} />
+      <RestaurantReserveBottomSheet open={isReserveSheetOpen} onClose={() => setReserveSheetOpen(false)} onProceed={handleProceedReservation} />
     </section>
   )
 }

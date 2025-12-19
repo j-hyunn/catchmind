@@ -57,19 +57,6 @@ export function CulturePoiDetailPage() {
         .slice(0, 3)
     )
   }, [poi])
-  const successRecommendations = useMemo(() => {
-    return nearbyRestaurants.map(place => {
-      const locationArea = place.address.split(' ')[1] ?? place.address
-      const placeType = place.type ?? mapCategoryLabel(place.category as PoiCategory)
-      return {
-        id: place.id,
-        name: place.name,
-        rating: getExperienceRating(place.name),
-        meta: `${placeType} · ${locationArea}`,
-      }
-    })
-  }, [nearbyRestaurants])
-
   useEffect(() => {
     if (!poiId) {
       setPoi(null)
@@ -491,9 +478,15 @@ export function CulturePoiDetailPage() {
         <div className="reservation-screen-overlay reservation-screen-overlay--light">
           <ReservationSuccessScreen
             summary={successSummary}
-            recommendations={successRecommendations}
+            basePoi={{
+              id: poi.id,
+              category: 'culture',
+              lat: Number(poi.lat ?? 0),
+              lng: Number(poi.lng ?? 0),
+            }}
             onClose={handleSuccessClose}
             onSelectRecommendation={id => navigate(`/poi/${id}`)}
+            onViewAll={category => navigate('/', { state: { filterCategory: category } })}
           />
         </div>
       )}
