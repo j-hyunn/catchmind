@@ -1,7 +1,10 @@
 import { useMemo } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
-import { ReservationSuccessScreen, type SuccessSummary } from '@/components/poi/reservation/ReservationSuccessScreen'
+import {
+  ReservationSuccessScreen,
+  type SuccessSummary,
+} from '@/components/poi/reservation/ReservationSuccessScreen'
 import type { SerializedRestaurantReservationSelection } from '@/components/poi/reservation/RestaurantReserveBottomSheet'
 import { poiService } from '@/services/poi/poiService'
 
@@ -53,7 +56,15 @@ export function RestaurantReservationSuccessPage() {
       onClose={() => navigate(poiId ? `/poi/${poiId}` : '/')}
       onSelectRecommendation={id => navigate(`/poi/${id}`)}
       onViewAll={category => navigate('/', { state: { filterCategory: category } })}
-      onViewReservationDetail={() => navigate(`/poi/${poiId}/reservation/confirm`, { replace: true, state: { selection, poiName } })}
+      onViewReservationDetail={() =>
+        navigate('/my-dining', {
+          state: {
+            reservation: selection,
+            poiId,
+            poiName,
+          },
+        })
+      }
     />
   )
 }

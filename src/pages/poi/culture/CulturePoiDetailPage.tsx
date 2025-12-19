@@ -12,8 +12,14 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import { ReservationSelectScreen, type ReservationSelectionResult } from '@/components/poi/reservation/ReservationSelectScreen'
-import { ReservationSuccessScreen, type SuccessSummary } from '@/components/poi/reservation/ReservationSuccessScreen'
+import {
+  ReservationSelectScreen,
+  type ReservationSelectionResult,
+} from '@/components/poi/reservation/ReservationSelectScreen'
+import {
+  ReservationSuccessScreen,
+  type SuccessSummary,
+} from '@/components/poi/reservation/ReservationSuccessScreen'
 import { TicketPaymentScreen } from '@/components/poi/reservation/TicketPaymentScreen'
 import { fetchPoiById } from '@/services/poi/poiApi'
 import { poiService } from '@/services/poi/poiService'
@@ -32,11 +38,16 @@ export function CulturePoiDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(1)
   const [detailExpanded, setDetailExpanded] = useState(false)
   const [activeTab, setActiveTab] = useState(DETAIL_TABS[0])
-  const [reservationStage, setReservationStage] = useState<'selection' | 'payment' | 'success' | null>(null)
-  const [selectedReservationDate, setSelectedReservationDate] = useState<Date | null>(null)
+  const [reservationStage, setReservationStage] = useState<
+    'selection' | 'payment' | 'success' | null
+  >(null)
+  const [selectedReservationDate, setSelectedReservationDate] = useState<Date | null>(
+    null,
+  )
   const [adultTicketCount, setAdultTicketCount] = useState(1)
   const [youthTicketCount, setYouthTicketCount] = useState(0)
-  const [ticketSelection, setTicketSelection] = useState<ReservationSelectionResult | null>(null)
+  const [ticketSelection, setTicketSelection] =
+    useState<ReservationSelectionResult | null>(null)
   const [successSummary, setSuccessSummary] = useState<SuccessSummary | null>(null)
   const carouselTrackRef = useRef<HTMLDivElement | null>(null)
   const carouselContainerRef = useRef<HTMLDivElement | null>(null)
@@ -46,16 +57,16 @@ export function CulturePoiDetailPage() {
     }
     const baseLat = Number(poi.lat ?? '0')
     const baseLng = Number(poi.lng ?? '0')
-    return (
-      mapVisualizationData
-        .filter(entry => entry.category === 'restaurant' && entry.name !== poi.name)
-        .map((entry): NearbyRestaurant => ({
+    return mapVisualizationData
+      .filter(entry => entry.category === 'restaurant' && entry.name !== poi.name)
+      .map(
+        (entry): NearbyRestaurant => ({
           ...entry,
           distance: Math.hypot(baseLat - Number(entry.lat), baseLng - Number(entry.lng)),
-        }))
-        .sort((a, b) => a.distance - b.distance)
-        .slice(0, 3)
-    )
+        }),
+      )
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 3)
   }, [poi])
   useEffect(() => {
     if (!poiId) {
@@ -118,7 +129,10 @@ export function CulturePoiDetailPage() {
   }
 
   const { rating, reviews } = getMockRating(poi)
-  const galleryImages: (string | undefined)[] = Array.from({ length: 5 }, (_, idx) => poi.images?.[idx])
+  const galleryImages: (string | undefined)[] = Array.from(
+    { length: 5 },
+    (_, idx) => poi.images?.[idx],
+  )
   const basePrice = poi.sessions?.[0]?.price ?? 24000
   const childPrice = Math.round((basePrice * 0.7) / 100) * 100
   const discountedAdultPrice = Math.round((basePrice * 0.7) / 100) * 100
@@ -231,7 +245,11 @@ export function CulturePoiDetailPage() {
       </header>
 
       <div className="poi-detail__scroll">
-        <div className="poi-detail__carousel" role="group" aria-label={`${poi.name} 이미지`}>
+        <div
+          className="poi-detail__carousel"
+          role="group"
+          aria-label={`${poi.name} 이미지`}
+        >
           <div
             className="poi-detail__carousel-track"
             ref={node => {
@@ -240,8 +258,16 @@ export function CulturePoiDetailPage() {
             onScroll={handleCarouselScroll}
           >
             {galleryImages.map((src, index) => (
-              <div key={`${poi.id}-carousel-${index}`} className="poi-detail__carousel-item" ref={index === 0 ? carouselContainerRef : undefined}>
-                {src ? <img src={src} alt={`${poi.name} 이미지 ${index + 1}`} /> : <div />}
+              <div
+                key={`${poi.id}-carousel-${index}`}
+                className="poi-detail__carousel-item"
+                ref={index === 0 ? carouselContainerRef : undefined}
+              >
+                {src ? (
+                  <img src={src} alt={`${poi.name} 이미지 ${index + 1}`} />
+                ) : (
+                  <div />
+                )}
               </div>
             ))}
           </div>
@@ -320,7 +346,8 @@ export function CulturePoiDetailPage() {
             </div>
           </div>
           <div className="poi-detail__price-note">
-            특정 기간, 특정 공연에만 판매하는 가격이 있으니 예매 전 [가격 전체 보기]를 눌러 확인해주세요.
+            특정 기간, 특정 공연에만 판매하는 가격이 있으니 예매 전 [가격 전체 보기]를
+            눌러 확인해주세요.
           </div>
           <button type="button" className="poi-detail__outline-button">
             가격 전체보기
@@ -333,8 +360,9 @@ export function CulturePoiDetailPage() {
             <div className="poi-detail__panel-title">할인정보</div>
             <div className="poi-detail__panel-accent">[평일 오전 관람 할인 이벤트]</div>
             <div className="poi-detail__panel-text">
-              * 진행기간: 2025.10.20 ~ 2025.12.21<br />
-              * 입장가능시간: 평일 10:00 ~ 12:00 (이후 입장 시 사용 불가 / 차액결제 필요)
+              * 진행기간: 2025.10.20 ~ 2025.12.21
+              <br />* 입장가능시간: 평일 10:00 ~ 12:00 (이후 입장 시 사용 불가 / 차액결제
+              필요)
             </div>
             <ul className="poi-detail__discount-list">
               <li>- 평일 오전 20%할인_성인 19,200원</li>
@@ -350,13 +378,16 @@ export function CulturePoiDetailPage() {
           <div className="poi-detail__section-block">
             <div className="poi-detail__panel-title">취소 및 환불 규정</div>
             <div className="poi-detail__panel-text">
-              예매 취소 조건보다 취소 수수료 규정이 우선 적용됩니다.<br />
-              예매 당일 자정(밤 12시) 이전 취소시 티켓 취소수수료가 없으며,
-              예매 수수료도 환불됩니다.(취소기한 내 한함)
+              예매 취소 조건보다 취소 수수료 규정이 우선 적용됩니다.
+              <br />
+              예매 당일 자정(밤 12시) 이전 취소시 티켓 취소수수료가 없으며, 예매 수수료도
+              환불됩니다.(취소기한 내 한함)
             </div>
             <div className="poi-detail__panel-text">
-              취소수수료 규정<br />
-              관람일 기준 아래와 같이 취소 수수료가 적용됩니다.<br />
+              취소수수료 규정
+              <br />
+              관람일 기준 아래와 같이 취소 수수료가 적용됩니다.
+              <br />
               취소 기한은 예매 후 [상세 예약 내역]에서 확인해 주세요.
             </div>
             <div className="poi-detail__alert-row poi-detail__alert-row--important">
@@ -376,7 +407,8 @@ export function CulturePoiDetailPage() {
           <div className="poi-detail__section-block">
             <div className="poi-detail__panel-title">예매 안내 사항</div>
             <div className="poi-detail__panel-text">
-              도착 예정 시간 10분 전까지 도착해 주시고, 본인 확인용 신분증을 지참해 주세요.
+              도착 예정 시간 10분 전까지 도착해 주시고, 본인 확인용 신분증을 지참해
+              주세요.
             </div>
           </div>
         </section>
@@ -385,7 +417,8 @@ export function CulturePoiDetailPage() {
           <div className="poi-detail__section-block">
             <div className="poi-detail__panel-title">상품 · 기획사 · 판매자 정보</div>
             <div className="poi-detail__panel-text">
-              상품 제공자는 CatchTable Lifestyle이며, 구매/환불 문의는 앱 내 고객센터를 이용해 주세요.
+              상품 제공자는 CatchTable Lifestyle이며, 구매/환불 문의는 앱 내 고객센터를
+              이용해 주세요.
             </div>
           </div>
         </section>
@@ -399,7 +432,8 @@ export function CulturePoiDetailPage() {
               {nearbyRestaurants.map(place => {
                 const locationArea = place.address.split(' ')[1] ?? place.address
                 const placeRating = getExperienceRating(place.name)
-                const placeType = place.type ?? mapCategoryLabel(place.category as PoiCategory)
+                const placeType =
+                  place.type ?? mapCategoryLabel(place.category as PoiCategory)
                 return (
                   <article
                     key={place.name}
@@ -443,7 +477,11 @@ export function CulturePoiDetailPage() {
         <button type="button" className="poi-detail__bookmark">
           <Bookmark size={18} />
         </button>
-        <button type="button" className="poi-detail__primary" onClick={handleOpenReservation}>
+        <button
+          type="button"
+          className="poi-detail__primary"
+          onClick={handleOpenReservation}
+        >
           예매하기
         </button>
       </footer>
@@ -484,6 +522,11 @@ export function CulturePoiDetailPage() {
               lat: Number(poi.lat ?? 0),
               lng: Number(poi.lng ?? 0),
             }}
+            myDiningPayload={{
+              summary: successSummary,
+              poiId: poi.id,
+              poiName: poi.name,
+            }}
             onClose={handleSuccessClose}
             onSelectRecommendation={id => navigate(`/poi/${id}`)}
             onViewAll={category => navigate('/', { state: { filterCategory: category } })}
@@ -495,7 +538,14 @@ export function CulturePoiDetailPage() {
 }
 
 const DETAIL_TABS = ['상품 상세', '가격', '할인 정보', '취소 및 환불']
-const CULTURE_CATEGORIES: LifestylePoi['category'][] = ['exhibition', 'performance', 'gallery', 'popup', 'class', 'walk']
+const CULTURE_CATEGORIES: LifestylePoi['category'][] = [
+  'exhibition',
+  'performance',
+  'gallery',
+  'popup',
+  'class',
+  'walk',
+]
 
 type RestaurantMapEntry = (typeof mapVisualizationData)[number]
 

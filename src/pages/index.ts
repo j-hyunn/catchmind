@@ -1,4 +1,5 @@
 export { HomePage } from './home/HomePage'
+export { MyDiningPage } from './my-dining/MyDiningPage'
 export { PoiDetailPage } from './poi/PoiDetailPage'
 export { RestaurantReservationConfirmPage } from './poi/restaurant/RestaurantReservationConfirmPage'
 export { RestaurantReservationSuccessPage } from './poi/restaurant/RestaurantReservationSuccessPage'

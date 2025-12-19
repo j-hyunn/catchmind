@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import mapVisualizationData from '../../../../Map Visualization Data.json'
 import type { PoiCategory } from '@/types/poi'
 import { mapCategoryLabel } from '@/utils/poi'
+
+import mapVisualizationData from '../../../../Map Visualization Data.json'
 
 import './ReservationSelectScreen.css'
 
@@ -28,6 +30,11 @@ interface SuccessScreenProps {
     lat: number
     lng: number
   }
+  myDiningPayload?: {
+    summary: SuccessSummary
+    poiId?: string
+    poiName?: string
+  }
   onClose: () => void
   onSelectRecommendation: (id: string) => void
   onViewAll: (category: 'culture' | 'restaurant') => void
@@ -39,6 +46,7 @@ interface SuccessScreenProps {
 export function ReservationSuccessScreen({
   summary,
   basePoi,
+  myDiningPayload,
   onClose,
   onSelectRecommendation,
   onViewAll,
@@ -46,6 +54,7 @@ export function ReservationSuccessScreen({
   onSendInvite,
   onShareTicket,
 }: SuccessScreenProps) {
+  const navigate = useNavigate()
   const recommendations = useMemo<Recommendation[]>(() => {
     const targetCategory = basePoi.category === 'restaurant' ? 'culture' : 'restaurant'
     const targetPlaces = mapVisualizationData
@@ -75,10 +84,16 @@ export function ReservationSuccessScreen({
   }, [basePoi])
 
   const { title, dateText, timeText, peopleText } = summary
-  const detailButtonLabel = basePoi.category === 'restaurant' ? '예약 정보 자세히 보기' : '예매 정보 자세히 보기'
-  const footerButtonLabel = basePoi.category === 'restaurant' ? '초대장 보내기' : '공유하기'
+  const detailButtonLabel =
+    basePoi.category === 'restaurant' ? '예약 정보 자세히 보기' : '예매 정보 자세히 보기'
+  const footerButtonLabel =
+    basePoi.category === 'restaurant' ? '초대장 보내기' : '공유하기'
 
   const handleDetailClick = () => {
+    if (basePoi.category === 'culture' && myDiningPayload) {
+      navigate('/my-dining', { state: { cultureReservation: myDiningPayload } })
+      return
+    }
     if (onViewReservationDetail) {
       onViewReservationDetail()
       return
@@ -112,7 +127,11 @@ export function ReservationSuccessScreen({
       </header>
 
       <main className="success-content">
-        <h1 className="success-title">{basePoi.category === 'restaurant' ? '예약을 완료했습니다.' : '예매를 완료했습니다.'}</h1>
+        <h1 className="success-title">
+          {basePoi.category === 'restaurant'
+            ? '예약을 완료했습니다.'
+            : '예매를 완료했습니다.'}
+        </h1>
 
         <div className="success-card">
           <div className="success-card__info">
@@ -124,18 +143,28 @@ export function ReservationSuccessScreen({
               <p className="success-meta-sub">{peopleText}</p>
             </div>
           </div>
-          <button type="button" className="success-detail-btn" onClick={handleDetailClick}>
+          <button
+            type="button"
+            className="success-detail-btn"
+            onClick={handleDetailClick}
+          >
             {detailButtonLabel}
           </button>
         </div>
 
         <section className="recommend-section">
           <div className="recommend-header">
-            <p className="recommend-title">{basePoi.category === 'restaurant' ? '주변에 이런 곳이 있어요' : '식사는 이런 곳 어때요?'}</p>
+            <p className="recommend-title">
+              {basePoi.category === 'restaurant'
+                ? '주변에 이런 곳이 있어요'
+                : '식사는 이런 곳 어때요?'}
+            </p>
             <button
               className="recommend-see-all"
               type="button"
-              onClick={() => onViewAll(basePoi.category === 'restaurant' ? 'culture' : 'restaurant')}
+              onClick={() =>
+                onViewAll(basePoi.category === 'restaurant' ? 'culture' : 'restaurant')
+              }
             >
               전체 보기 <span className="chevron">›</span>
             </button>
