@@ -6,6 +6,7 @@ import { MapView } from '@/components/map/MapView'
 import { PoiBottomSheet } from '@/components/poi/PoiBottomSheet'
 import { poiService } from '@/services/poi/poiService'
 import type { LifestylePoi, PoiCategory } from '@/types/poi'
+import { trackEvent } from '@/utils/analytics'
 import { calculateDistanceInKm } from '@/utils/geo'
 
 import './HomePage.css'
@@ -85,6 +86,11 @@ export function HomePage() {
   }, [sheetState])
 
   const handlePoiSelect = (poi: LifestylePoi) => {
+    trackEvent('click_place_poi', {
+      poi_id: poi.id,
+      poi_category: poi.category,
+      source: 'home_poi_list',
+    })
     setSelectedPoiId(poi.id)
     navigate(`/poi/${poi.id}`)
     setSheetState('unfolded')

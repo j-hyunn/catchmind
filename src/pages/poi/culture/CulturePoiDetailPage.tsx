@@ -17,6 +17,7 @@ import mapVisualizationData from '../../../../Map Visualization Data.json'
 import { fetchPoiById } from '@/services/poi/poiApi'
 import { poiService } from '@/services/poi/poiService'
 import type { LifestylePoi, PoiCategory } from '@/types/poi'
+import { trackEvent } from '@/utils/analytics'
 import { getMockRating, mapCategoryLabel } from '@/utils/poi'
 
 import './CulturePoiDetailPage.css'
@@ -32,6 +33,7 @@ export function CulturePoiDetailPage() {
   const [activeTab, setActiveTab] = useState(DETAIL_TABS[0])
   const carouselTrackRef = useRef<HTMLDivElement | null>(null)
   const carouselContainerRef = useRef<HTMLDivElement | null>(null)
+  const lastPoiViewId = useRef<string | null>(null)
   const nearbyRestaurants = useMemo<NearbyRestaurant[]>(() => {
     if (!poi) {
       return []
@@ -91,6 +93,17 @@ export function CulturePoiDetailPage() {
     return () => controller.abort()
   }, [poiId])
 
+  useEffect(() => {
+    if (!poi || lastPoiViewId.current === poi.id) {
+      return
+    }
+    lastPoiViewId.current = poi.id
+    trackEvent('view_place_poi_detail', {
+      poi_id: poi.id,
+      poi_category: poi.category,
+    })
+  }, [poi])
+
   if (isLoading) {
     return (
       <section className="poi-detail poi-detail--empty">
@@ -139,6 +152,17 @@ export function CulturePoiDetailPage() {
     const offset = carouselTrackRef.current.scrollLeft
     const index = Math.round(offset / containerWidth) + 1
     setCurrentImageIndex(Math.min(Math.max(index, 1), totalImages))
+  }
+
+  const handleConversionClick = () => {
+    if (!poi) {
+      return
+    }
+    trackEvent('place_poi_conversion', {
+      poi_id: poi.id,
+      poi_category: poi.category,
+      action: 'reserve',
+    })
   }
 
   return (
@@ -378,7 +402,7 @@ export function CulturePoiDetailPage() {
         <button type="button" className="poi-detail__bookmark">
           <Bookmark size={18} />
         </button>
-        <button type="button" className="poi-detail__primary">
+        <button type="button" className="poi-detail__primary" onClick={handleConversionClick}>
           예매하기
         </button>
       </footer>

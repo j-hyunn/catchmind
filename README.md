@@ -33,6 +33,20 @@ cp .env.example .env
 
 Mock API 서버(`npm run mock:api`)를 실행하면 `VITE_API_BASE_URL`에 맞춰 POI 데이터가 HTTP로 제공된다. API가 응답하지 않으면 클라이언트는 자동으로 정적 데이터로 대체한다.
 
+## 분석 이벤트 스키마
+
+GA4에서 사용하는 이벤트 이름과 파라미터는 아래 기준으로 고정한다.
+
+| 이벤트 | 발생 시점 | 파라미터 |
+| --- | --- | --- |
+| `view_dining_detail` | 다이닝 상세 진입 시 1회 | `poi_id`, `poi_category` |
+| `view_place_poi_module` | 다이닝 상세의 주변 문화 모듈 노출 시 1회 | `anchor_poi_id`, `module_type`, `poi_count` |
+| `click_place_poi` | 홈/다이닝 상세의 POI 카드 클릭 | `poi_id`, `poi_category`, `source`, `anchor_poi_id` |
+| `view_place_poi_detail` | 문화 POI 상세 진입 시 1회 | `poi_id`, `poi_category` |
+| `place_poi_conversion` | 문화 POI 상세 CTA 클릭 | `poi_id`, `poi_category`, `action` |
+
+`source`는 `home_poi_list` 또는 `dining_detail_module`을 사용한다. `anchor_poi_id`는 다이닝 상세 모듈 클릭 시에만 포함한다.
+
 ## 폴더 구조
 
 ```
