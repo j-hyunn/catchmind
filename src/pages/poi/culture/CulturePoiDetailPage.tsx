@@ -24,6 +24,7 @@ import { TicketPaymentScreen } from '@/components/poi/reservation/TicketPaymentS
 import { fetchPoiById } from '@/services/poi/poiApi'
 import { poiService } from '@/services/poi/poiService'
 import type { LifestylePoi, PoiCategory } from '@/types/poi'
+import { trackEvent } from '@/utils/analytics'
 import { getMockRating, mapCategoryLabel } from '@/utils/poi'
 
 import mapVisualizationData from '../../../../Map Visualization Data.json'
@@ -51,6 +52,7 @@ export function CulturePoiDetailPage() {
   const [successSummary, setSuccessSummary] = useState<SuccessSummary | null>(null)
   const carouselTrackRef = useRef<HTMLDivElement | null>(null)
   const carouselContainerRef = useRef<HTMLDivElement | null>(null)
+  const lastPoiViewId = useRef<string | null>(null)
   const nearbyRestaurants = useMemo<NearbyRestaurant[]>(() => {
     if (!poi) {
       return []
@@ -109,6 +111,17 @@ export function CulturePoiDetailPage() {
     return () => controller.abort()
   }, [poiId])
 
+  useEffect(() => {
+    if (!poi || lastPoiViewId.current === poi.id) {
+      return
+    }
+    lastPoiViewId.current = poi.id
+    trackEvent('view_place_poi_detail', {
+      poi_id: poi.id,
+      poi_category: poi.category,
+    })
+  }, [poi])
+
   if (isLoading) {
     return (
       <section className="poi-detail poi-detail--empty">
@@ -164,6 +177,13 @@ export function CulturePoiDetailPage() {
   }
 
   const handleOpenReservation = () => {
+    if (poi) {
+      trackEvent('place_poi_conversion', {
+        poi_id: poi.id,
+        poi_category: poi.category,
+        action: 'reserve',
+      })
+    }
     setReservationStage('selection')
   }
 

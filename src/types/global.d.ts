@@ -64,6 +64,8 @@ declare global {
 
   interface Window {
     kakao?: typeof kakao
+    dataLayer?: unknown[]
+    gtag?: (...args: unknown[]) => void
   }
 }
 

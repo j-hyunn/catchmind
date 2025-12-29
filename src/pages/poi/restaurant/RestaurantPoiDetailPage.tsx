@@ -22,6 +22,7 @@ import { RestaurantBottomSheet } from '@/components/poi/RestaurantBottomSheet'
 import { fetchPoiById } from '@/services/poi/poiApi'
 import { poiService } from '@/services/poi/poiService'
 import type { LifestylePoi, PoiCategory } from '@/types/poi'
+import { trackEvent } from '@/utils/analytics'
 import { getMockRating, mapCategoryLabel } from '@/utils/poi'
 
 import mapVisualizationData from '../../../../Map Visualization Data.json'
@@ -39,6 +40,8 @@ export function RestaurantPoiDetailPage() {
   const carouselTrackRef = useRef<HTMLDivElement | null>(null)
   const carouselContainerRef = useRef<HTMLDivElement | null>(null)
   const [isReserveSheetOpen, setReserveSheetOpen] = useState(false)
+  const lastDiningViewId = useRef<string | null>(null)
+  const lastModuleViewId = useRef<string | null>(null)
 
   useEffect(() => {
     if (!poiId) {
@@ -99,6 +102,29 @@ export function RestaurantPoiDetailPage() {
       .slice(0, 3)
   }, [poi])
 
+  useEffect(() => {
+    if (!poi || lastDiningViewId.current === poi.id) {
+      return
+    }
+    lastDiningViewId.current = poi.id
+    trackEvent('view_dining_detail', {
+      poi_id: poi.id,
+      poi_category: poi.category,
+    })
+  }, [poi])
+
+  useEffect(() => {
+    if (!poi || !nearbyCulturePlaces.length || lastModuleViewId.current === poi.id) {
+      return
+    }
+    lastModuleViewId.current = poi.id
+    trackEvent('view_place_poi_module', {
+      anchor_poi_id: poi.id,
+      module_type: 'nearby_culture',
+      poi_count: nearbyCulturePlaces.length,
+    })
+  }, [nearbyCulturePlaces, poi])
+
   if (isLoading) {
     return (
       <section className="poi-detail poi-detail--empty">
@@ -149,6 +175,19 @@ export function RestaurantPoiDetailPage() {
         state: { selection: serializedSelection },
       })
     }
+  }
+
+  const handleNearbyPlaceClick = (place: NearbyRestaurant) => {
+    if (!poi) {
+      return
+    }
+    trackEvent('click_place_poi', {
+      poi_id: place.id,
+      poi_category: place.category,
+      source: 'dining_detail_module',
+      anchor_poi_id: poi.id,
+    })
+    navigate(`/poi/${place.id}`)
   }
 
   return (
@@ -451,11 +490,11 @@ export function RestaurantPoiDetailPage() {
                     className="poi-detail__experience-card"
                     role="button"
                     tabIndex={0}
-                    onClick={() => navigate(`/poi/${place.id}`)}
+                    onClick={() => handleNearbyPlaceClick(place)}
                     onKeyDown={event => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault()
-                        navigate(`/poi/${place.id}`)
+                        handleNearbyPlaceClick(place)
                       }
                     }}
                   >
